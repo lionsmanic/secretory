@@ -1224,6 +1224,20 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
   </div>
 
   <div class="settings-group">
+    <div class="settings-label">明日預告 · Tomorrow Brief</div>
+    <div class="settings-desc">前一晚推播明日行程到鎖屏。搭配 iOS 捷徑可完全自動化(每晚 22:00 自動生成並推送)。</div>
+    <div class="action-row">
+      <button class="btn primary" id="btnTomorrowNow">現在預覽明日</button>
+      <button class="btn ghost" id="btnTomorrowSetup">iOS 捷徑設定</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn ghost" id="btnCopyBriefUrls" style="width:100%;font-size:12px">
+        複製兩個 action 網址
+      </button>
+    </div>
+  </div>
+
+  <div class="settings-group">
     <div class="settings-label">行事曆 · Calendar</div>
     <div class="settings-desc">匯出所有待辦任務為 .ics 檔,可直接匯入 Google Calendar / Apple Calendar。</div>
     <div class="action-row">
@@ -1464,6 +1478,73 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
     <div class="modal-actions" style="margin-top:20px">
       <button class="btn ghost" id="iosClose">關閉</button>
       <button class="btn primary" id="iosCopyUrl">複製秘書網址</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOMORROW BRIEF SETUP MODAL ============ -->
+<div class="modal" id="tomorrowModal">
+  <div class="modal-content">
+    <div class="modal-title">明日預告推播</div>
+    <div class="modal-sub">iOS 捷徑設定 · 前晚 22:00 自動推送</div>
+
+    <div style="background:var(--bg-card);padding:14px;border-radius:3px;border-left:3px solid var(--accent);font-size:13px;color:var(--ink-soft);line-height:1.7;margin-bottom:20px">
+      <b style="color:var(--accent);font-family:'Fraunces',serif;font-style:italic">運作原理</b><br>
+      每晚 22:00,iOS 自動打開秘書 → 秘書讀明日任務 → 生成「簡短版」放到剪貼簿 → 捷徑讀剪貼簿 → 推送鎖屏通知。點通知能打開「全文版」。
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-field-label">步驟 1 — 建立「預告明日」捷徑</div>
+      <div class="modal-field-value" style="font-size:14px;line-height:1.9">
+        打開「捷徑」app → 右上 <b>+</b> 新增 → 命名「<b style="color:var(--accent)">預告明日</b>」,加入 4 個動作:
+        <div style="background:var(--bg);padding:12px;border-radius:3px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);line-height:1.8">
+1│ 打開 URL<br>
+&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">[秘書網址]?action=tomorrow-brief</span><br>
+2│ 等待:<b>8 秒</b><br>
+3│ 取得剪貼簿<br>
+4│ 顯示通知<br>
+&nbsp;&nbsp;&nbsp;標題:<b>秘書 · 明日預告</b><br>
+&nbsp;&nbsp;&nbsp;內文:<b>[剪貼簿]</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-field-label">步驟 2 — 建立自動化</div>
+      <div class="modal-field-value" style="font-size:14px;line-height:1.9">
+        捷徑 app → 下方切到「<b>自動化</b>」→ <b>+</b> 新增 → 「<b>特定時間</b>」 → 
+        <b style="color:var(--accent)">22:00 每天</b> → 
+        <b>關掉「執行前先詢問」</b> → 下一步 → 
+        新增動作:<b>「執行捷徑」→ 選「預告明日」</b> → 完成。
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-field-label">步驟 3 — 建立「看秘書早報」(可選)</div>
+      <div class="modal-field-value" style="font-size:14px;line-height:1.9">
+        讓你能從通知或鎖屏快速打開全文版:
+        <div style="background:var(--bg);padding:12px;border-radius:3px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);line-height:1.8">
+1│ 打開 URL<br>
+&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">[秘書網址]?action=show-brief</span>
+        </div>
+        <div style="margin-top:8px">
+          命名為「<b style="color:var(--accent)">看秘書早報</b>」,加到主畫面當 app icon,或加到鎖屏 widget。
+        </div>
+      </div>
+    </div>
+
+    <hr class="rule">
+
+    <div style="background:var(--bg-card);padding:14px;border-radius:3px;border-left:3px solid var(--urgent-soft);font-size:12px;color:var(--ink-soft);line-height:1.7">
+      <b style="color:var(--urgent);font-family:'Fraunces',serif;font-style:italic">注意事項</b><br>
+      · iPhone 自動化需要<b>螢幕解鎖時</b>才能執行 → 睡前檢查手機 22:00 前有解過鎖一次即可<br>
+      · 第一次執行會跳權限,請選<b>允許</b><br>
+      · 如果 22:00 太早,可調整捷徑自動化的時間
+    </div>
+
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn ghost" id="tomorrowClose">關閉</button>
+      <button class="btn primary" id="tomorrowCopyUrls">複製兩個 action 網址</button>
     </div>
   </div>
 </div>
@@ -3073,6 +3154,31 @@ $('#iosCopyUrl').onclick = async () => {
   }
 };
 
+// ------- Tomorrow Brief 按鈕 -------
+$('#btnTomorrowNow').onclick = async () => {
+  // 直接執行 tomorrow-brief 流程
+  await runTomorrowBriefAction();
+};
+
+$('#btnCopyBriefUrls').onclick = async () => {
+  const base = location.origin + location.pathname;
+  const text = `生成明日預告(捷徑用):\n${base}?action=tomorrow-brief\n\n查看已生成的預告(從通知打開):\n${base}?action=show-brief`;
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('兩個網址已複製');
+  } catch {
+    toast('複製失敗', true);
+  }
+};
+
+$('#btnTomorrowSetup').onclick = () => {
+  $('#tomorrowModal').classList.add('show');
+};
+
+$('#tomorrowClose').onclick = () => $('#tomorrowModal').classList.remove('show');
+$('#tomorrowModal').onclick = e => { if (e.target.id === 'tomorrowModal') $('#tomorrowModal').classList.remove('show'); };
+$('#tomorrowCopyUrls').onclick = () => $('#btnCopyBriefUrls').click();
+
 // ------- Service Worker (offline support) -------
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
@@ -3144,6 +3250,219 @@ async function init() {
 // 支援兩種來源:
 // 1. iOS 捷徑: /secretary.html?text=...  或  ?shared=1 (圖片存在 sessionStorage)
 // 2. Android Web Share Target: /secretary.html?title=...&text=...&url=...
+// ==============================================
+// Tomorrow Brief — 前晚推播明日行程的核心邏輯
+// ==============================================
+
+// 生成「明日簡短版」(給鎖屏通知用,50 字內)
+function buildTomorrowShortBrief(tomorrowTasks) {
+  if (tomorrowTasks.length === 0) {
+    return '明日沒有排定任務 · 享受清閒';
+  }
+  // 優先級排序
+  const sorted = tomorrowTasks.slice().sort((a, b) => {
+    const order = { urgent: 0, important: 1, normal: 2 };
+    return (order[a.priority] ?? 3) - (order[b.priority] ?? 3);
+  });
+  const topItem = sorted[0];
+  const cnt = tomorrowTasks.length;
+  const urgentCnt = tomorrowTasks.filter(t => t.priority === 'urgent').length;
+
+  // 取第一項的標題(截到 15 字)
+  let topTitle = topItem.title;
+  if (topTitle.length > 15) topTitle = topTitle.slice(0, 15) + '…';
+
+  if (cnt === 1) {
+    return `明日 1 件:${topTitle}`;
+  }
+  if (urgentCnt > 0) {
+    return `明日 ${cnt} 件(${urgentCnt} 緊急) · 先處理「${topTitle}」`;
+  }
+  return `明日 ${cnt} 件 · 重點「${topTitle}」`;
+}
+
+// 生成「明日全文版」(Gemini 產生,秘書語氣)
+async function buildTomorrowFullBrief(tomorrowTasks) {
+  if (tomorrowTasks.length === 0) {
+    return '明日沒有排定的任務,好好休息吧。';
+  }
+
+  const key = await getSetting('apiKey');
+  if (!key) {
+    // 沒金鑰 → 用簡單列表
+    return '明日任務:\n\n' + tomorrowTasks.map(t =>
+      `• ${t.title}${t.deadline ? ` (${new Date(t.deadline).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})})` : ''}${t.assigner ? ` — ${t.assigner}` : ''}`
+    ).join('\n');
+  }
+
+  const list = tomorrowTasks.map(t =>
+    `- [${t.priority}][${t.category || '?'}] ${t.title}${t.deadline ? ` | 時間:${new Date(t.deadline).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}` : ''}${t.assigner ? ` | 來自:${t.assigner}` : ''}${t.note ? ` | 備註:${t.note}` : ''}`
+  ).join('\n');
+
+  const dateStr = new Date(Date.now() + 86400000).toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' });
+
+  const prompt = `你是 Wilson 醫師(婦癌科)的私人秘書。現在是晚上,明天是 ${dateStr}。請用繁體中文寫一段「明日預告」:
+
+1. 開場用一句話總結明日主題或節奏(例如:「明天以門診為主」「明天三場會議,需要早到」)
+2. 具體點出最該優先處理的 1-2 件事(理由要具體)
+3. 提醒需要今晚提前準備的事情(例如:明早 8 點的會議要帶什麼、有沒有要先 review 資料等)
+4. 結尾給一個溫暖但不肉麻的晚安祝福
+
+總長度控制在 120-180 字。口吻溫和、精煉、像一位 20 年經驗的資深秘書。不要有 "好的" "以下是" 之類的開場白。
+
+明日任務清單:
+${list}`;
+
+  try {
+    const text = await callGemini(prompt, null, { temperature: 0.5 });
+    return text.trim();
+  } catch (e) {
+    // 失敗 fallback
+    return '明日任務:\n\n' + tomorrowTasks.map(t =>
+      `• ${t.title}${t.deadline ? ` (${new Date(t.deadline).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})})` : ''}`
+    ).join('\n');
+  }
+}
+
+// 執行:當 URL 是 ?action=tomorrow-brief 時呼叫
+async function runTomorrowBriefAction() {
+  // 顯示全螢幕處理畫面
+  const overlay = document.createElement('div');
+  overlay.id = 'tomorrowBriefOverlay';
+  overlay.style.cssText = `
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 4000; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px;
+  `;
+  overlay.innerHTML = `
+    <div style="font-family:'Fraunces',serif;font-style:italic;font-size:26px;color:var(--accent);margin-bottom:8px;text-align:center">
+      秘書正在寫明日預告…
+    </div>
+    <div id="brfStatus" style="font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:var(--ink-soft);margin-top:20px;text-align:center;max-width:320px;line-height:1.7">
+      讀取明日任務 · 生成摘要 · 準備通知內容
+    </div>
+    <div id="brfDots" style="margin-top:24px">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 3px;animation:pulse 1.4s infinite"></span>
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 3px;animation:pulse 1.4s infinite 0.2s"></span>
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 3px;animation:pulse 1.4s infinite 0.4s"></span>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const setStatus = msg => {
+    const el = document.getElementById('brfStatus');
+    if (el) el.textContent = msg;
+  };
+
+  try {
+    // 等 DB 就緒
+    if (!db) await openDB();
+
+    // 取明日任務
+    const all = await allTasks();
+    const tomorrow = dayStart(new Date(Date.now() + 86400000));
+    const tomorrowEnd = new Date(tomorrow.getTime() + 86400000);
+    const tomorrowTasks = all.filter(t => {
+      if (t.done || !t.deadline) return false;
+      const d = new Date(t.deadline);
+      return d >= tomorrow && d < tomorrowEnd;
+    });
+
+    setStatus(`找到 ${tomorrowTasks.length} 件明日任務 · 生成內容中`);
+
+    const shortBrief = buildTomorrowShortBrief(tomorrowTasks);
+    const fullBrief = await buildTomorrowFullBrief(tomorrowTasks);
+
+    // 存進 localStorage,讓「看秘書早報」action 可讀
+    localStorage.setItem('tomorrowBrief', JSON.stringify({
+      short: shortBrief,
+      full: fullBrief,
+      generatedAt: Date.now(),
+      forDate: tomorrow.toISOString(),
+      taskCount: tomorrowTasks.length
+    }));
+
+    // 把簡短版寫到剪貼簿(讓捷徑讀取並用於通知)
+    try {
+      await navigator.clipboard.writeText(shortBrief);
+    } catch (e) {
+      // 剪貼簿寫入失敗就算了,捷徑那邊也可以改從別的地方讀
+      console.log('clipboard write failed:', e);
+    }
+
+    // 顯示結果 + 自動關閉
+    overlay.innerHTML = `
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:26px;color:var(--accent);margin-bottom:16px;text-align:center">
+        明日預告已備好
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--accent);border-radius:4px;padding:16px;max-width:340px;width:100%;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--ink-dim);letter-spacing:0.2em;margin-bottom:8px">SHORT · 已複製到剪貼簿</div>
+        <div style="font-size:15px;color:var(--ink);line-height:1.6">${escape(shortBrief)}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--hairline);border-radius:4px;padding:16px;max-width:340px;width:100%;max-height:280px;overflow-y:auto">
+        <div style="font-size:11px;color:var(--ink-dim);letter-spacing:0.2em;margin-bottom:8px">FULL</div>
+        <div style="font-size:14px;color:var(--ink-soft);line-height:1.8;white-space:pre-wrap">${escape(fullBrief)}</div>
+      </div>
+      <div style="font-size:12px;color:var(--ink-dim);margin-top:20px;text-align:center;font-family:'Fraunces',serif;font-style:italic">此畫面將自動關閉 · 捷徑會用剪貼簿內容發通知</div>
+    `;
+    // 5 秒後自動關閉(給 iOS 捷徑讀剪貼簿的時間)
+    setTimeout(() => overlay.remove(), 5000);
+  } catch (e) {
+    console.error(e);
+    overlay.innerHTML = `
+      <div style="color:var(--urgent);font-family:'Fraunces',serif;font-style:italic;font-size:20px;margin-bottom:12px">生成失敗</div>
+      <div style="color:var(--ink-soft);font-size:13px;max-width:320px;text-align:center">${escape(e.message)}</div>
+      <button onclick="document.getElementById('tomorrowBriefOverlay').remove()" style="margin-top:20px;padding:10px 20px;background:var(--accent);color:var(--bg);border:none;border-radius:3px">關閉</button>
+    `;
+  }
+}
+
+// 顯示存好的 full brief(給從通知點進來的使用者看)
+async function showStoredBrief() {
+  const stored = localStorage.getItem('tomorrowBrief');
+  let data = null;
+  try { data = JSON.parse(stored); } catch(e) {}
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 4000; display: flex; flex-direction: column;
+    padding: 24px; padding-top: calc(env(safe-area-inset-top) + 40px);
+    overflow-y: auto;
+  `;
+
+  if (!data) {
+    overlay.innerHTML = `
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:24px;color:var(--accent);margin-bottom:10px;text-align:center">尚未生成預告</div>
+      <div style="color:var(--ink-soft);font-size:14px;text-align:center;line-height:1.7;max-width:340px;margin:0 auto">
+        還沒有明日預告 · 秘書會在晚上自動生成<br>(或透過「預告明日」捷徑手動觸發)
+      </div>
+      <button onclick="this.parentNode.remove()" style="margin:30px auto 0;padding:12px 24px;background:var(--accent);color:var(--bg);border:none;border-radius:3px;font-family:'Noto Serif TC',serif;font-size:14px">關閉</button>
+    `;
+  } else {
+    const genTime = new Date(data.generatedAt).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const forDate = new Date(data.forDate).toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' });
+    overlay.innerHTML = `
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:26px;color:var(--accent);text-align:center;margin-bottom:4px">明日預告</div>
+      <div style="font-family:'Noto Serif TC',serif;font-size:13px;color:var(--ink-dim);text-align:center;letter-spacing:0.2em;margin-bottom:20px">FOR ${forDate.toUpperCase()}</div>
+
+      <div style="background:var(--bg-card);border-left:3px solid var(--accent);padding:16px 18px;border-radius:3px;margin-bottom:20px">
+        <div style="font-size:15px;color:var(--ink);line-height:1.85;white-space:pre-wrap">${escape(data.full)}</div>
+      </div>
+
+      <div style="text-align:center;font-family:'Fraunces',serif;font-style:italic;font-size:11px;color:var(--ink-dim);letter-spacing:0.1em;margin-bottom:30px">生成於 ${genTime} · ${data.taskCount} 件任務</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:340px;margin:0 auto;width:100%">
+        <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove(); switchView('today');" style="padding:12px;background:transparent;border:1px solid var(--hairline-strong);color:var(--ink);border-radius:3px;font-family:'Noto Serif TC',serif;font-size:13px">看行事曆</button>
+        <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove();" style="padding:12px;background:var(--accent);color:var(--bg);border:none;border-radius:3px;font-family:'Noto Serif TC',serif;font-size:13px">關閉</button>
+      </div>
+    `;
+  }
+  document.body.appendChild(overlay);
+}
+
+// ==============================================
+
 async function handleIncomingShare() {
   const params = new URLSearchParams(location.search);
   const text = params.get('text');
@@ -3153,6 +3472,7 @@ async function handleIncomingShare() {
   const fromShare = params.get('from') === 'share';
   const launchPwa = params.get('launch') === 'pwa';
   const debug = params.get('debug') === '1';
+  const action = params.get('action');  // tomorrow-brief / show-brief
 
   // 偵測 PWA 啟動模式
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
@@ -3166,8 +3486,21 @@ async function handleIncomingShare() {
       isStandalone,
       fromShare,
       launchPwa,
+      action,
       params: Object.fromEntries(params.entries())
     });
+  }
+
+  // ==== action 處理(給 iOS 捷徑用) ====
+  if (action === 'tomorrow-brief') {
+    history.replaceState({}, '', location.pathname);
+    await runTomorrowBriefAction();
+    return;
+  }
+  if (action === 'show-brief') {
+    history.replaceState({}, '', location.pathname);
+    await showStoredBrief();
+    return;
   }
 
   // 組合所有文字欄位(title、text、url 可能分開傳)
