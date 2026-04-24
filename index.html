@@ -815,6 +815,71 @@ hr.rule {
 }
 
 /* ============ CALENDAR ============ */
+
+/* ---- Date Bar (compact header on Today view) ---- */
+.date-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.date-bar-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  position: relative;
+}
+.date-bar-main:active { transform: scale(0.99); background: var(--bg-elev); }
+.date-bar-date {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  flex: 1;
+}
+.date-bar-date.is-today {
+  color: var(--accent);
+}
+.date-bar-sub {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 0.15em;
+  margin-right: 6px;
+}
+.date-bar-caret {
+  color: var(--ink-dim);
+  transition: transform 0.3s;
+}
+.date-bar-today {
+  padding: 0 16px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  display: none;
+}
+.date-bar-today.show { display: block; }
+.date-bar-today:active { transform: scale(0.96); background: rgba(212, 175, 122, 0.1); }
+
 .cal-header {
   display: flex;
   justify-content: space-between;
@@ -1045,25 +1110,15 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
 
 <!-- ============ TODAY VIEW ============ -->
 <main class="view active" id="view-today">
-  <!-- 日曆 Header -->
-  <div class="cal-header">
-    <div class="cal-nav">
-      <button class="cal-nav-btn" id="calPrev">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <button class="cal-month-label" id="calMonthLabel">2026 四月</button>
-      <button class="cal-nav-btn" id="calNext">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-    </div>
-    <div class="cal-view-toggle">
-      <button class="cal-toggle-btn active" data-calmode="month">月</button>
-      <button class="cal-toggle-btn" data-calmode="week">週</button>
-      <button class="cal-today-btn" id="calTodayBtn">今日</button>
-    </div>
+  <!-- 日期列(精簡,點擊展開月曆) -->
+  <div class="date-bar" id="dateBar">
+    <button class="date-bar-main" id="dateBarMain">
+      <div class="date-bar-date" id="dateBarDate">—</div>
+      <div class="date-bar-sub" id="dateBarSub">—</div>
+      <svg class="date-bar-caret" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <button class="date-bar-today" id="dateBarToday">今日</button>
   </div>
-
-  <div class="cal-grid" id="calGrid"></div>
 
   <!-- Briefing 只在選到今日時顯示 -->
   <div class="briefing" id="briefing" style="display:none">
@@ -1093,6 +1148,38 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
     <span id="btnAddToDateLabel">在此日新增任務</span>
   </button>
 </main>
+
+<!-- ============ CALENDAR MODAL ============ -->
+<div class="modal" id="calModal">
+  <div class="modal-content" style="padding-top:16px">
+    <div class="cal-header" style="margin-bottom:12px">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" id="calPrev">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="cal-month-label" id="calMonthLabel">2026 四月</button>
+        <button class="cal-nav-btn" id="calNext">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="cal-view-toggle">
+        <button class="cal-toggle-btn active" data-calmode="month">月</button>
+        <button class="cal-toggle-btn" data-calmode="week">週</button>
+        <button class="cal-today-btn" id="calTodayBtn">今日</button>
+      </div>
+    </div>
+
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div style="margin-top:16px;text-align:center;font-family:'Fraunces',serif;font-style:italic;font-size:12px;color:var(--ink-dim)">
+      選日期後自動關閉 · 也可點下方關閉
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn" id="calModalClose" style="width:100%">關閉</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ CAPTURE VIEW ============ -->
 <main class="view" id="view-capture">
@@ -2122,6 +2209,36 @@ function calNavMonth(delta) {
   renderTasks();
 }
 
+// 更新精簡日期列(Today view 最上方)
+function updateDateBar() {
+  const dateEl = $('#dateBarDate');
+  const subEl = $('#dateBarSub');
+  const todayBtn = $('#dateBarToday');
+  if (!dateEl) return;
+
+  const d = selectedDate;
+  const today = isToday(d);
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const wk = ['週日','週一','週二','週三','週四','週五','週六'][d.getDay()];
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  if (today) {
+    dateEl.textContent = `Today · ${m}/${day}`;
+    dateEl.classList.add('is-today');
+  } else {
+    dateEl.textContent = `${m}/${day} ${wk}`;
+    dateEl.classList.remove('is-today');
+  }
+  subEl.textContent = `${monthNames[d.getMonth()].slice(0,3).toUpperCase()} ${y}`;
+
+  // 「今日」按鈕只在不是今日時顯示
+  if (todayBtn) {
+    todayBtn.classList.toggle('show', !today);
+  }
+}
+
 function escape(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -2129,6 +2246,7 @@ function escape(s) {
 async function refresh() {
   cachedTasks = await allTasks();
   renderCalendar();
+  updateDateBar();
   renderTasks();
   updateStats();
 }
@@ -2381,18 +2499,12 @@ $('#calMonthLabel').onclick = () => {
   selectedDate = new Date();
   calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
   renderCalendar();
+  updateDateBar();
   renderTasks();
 };
 $('#calTodayBtn').onclick = () => {
-  selectedDate = new Date();
-  calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-  // 切回「所選日」filter
-  currentFilter = 'day';
-  document.querySelectorAll('#filters .filter-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.filter === 'day');
-  });
-  renderCalendar();
-  renderTasks();
+  jumpToToday();
+  closeCalModal();
 };
 
 document.querySelectorAll('.cal-toggle-btn').forEach(btn => {
@@ -2404,26 +2516,50 @@ document.querySelectorAll('.cal-toggle-btn').forEach(btn => {
   };
 });
 
-// 日期點擊
+// 日期點擊 - 選後自動關閉 modal
 $('#calGrid').onclick = e => {
   const day = e.target.closest('.cal-day');
   if (!day) return;
   selectedDate = new Date(day.dataset.date);
-  // 若切到別的月,同步 calViewMonth
   calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-  // 選了日期自動切到「所選日」filter
   currentFilter = 'day';
   document.querySelectorAll('#filters .filter-pill').forEach(p => {
     p.classList.toggle('active', p.dataset.filter === 'day');
   });
   renderCalendar();
+  updateDateBar();
   renderTasks();
+  // 選完自動關閉 modal(小延遲讓使用者看到選中狀態)
+  setTimeout(closeCalModal, 180);
 };
+
+// ---- 日期列(Today view 最上方)互動 ----
+function openCalModal() {
+  renderCalendar();  // 確保顯示的月份是最新的
+  $('#calModal').classList.add('show');
+}
+function closeCalModal() {
+  $('#calModal').classList.remove('show');
+}
+function jumpToToday() {
+  selectedDate = new Date();
+  calViewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  currentFilter = 'day';
+  document.querySelectorAll('#filters .filter-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.filter === 'day');
+  });
+  renderCalendar();
+  updateDateBar();
+  renderTasks();
+}
+
+$('#dateBarMain').onclick = openCalModal;
+$('#dateBarToday').onclick = jumpToToday;
+$('#calModalClose').onclick = closeCalModal;
+$('#calModal').onclick = e => { if (e.target.id === 'calModal') closeCalModal(); };
 
 // 在所選日新增任務
 $('#btnAddToDate').onclick = () => {
-  // 若 filter 不是 day 模式或選的就是今日 → 一般新增
-  // 若選的是其他日期 → 預設 deadline 為該日 09:00
   let presetDate = null;
   if (currentFilter === 'day') {
     const d = new Date(selectedDate);
@@ -2618,7 +2754,18 @@ function switchView(v) {
   if (v === 'today') { makeBriefing(); }
   if (v === 'settings') { updateStats(); }
 }
-$$('.nav-item').forEach(el => el.onclick = () => switchView(el.dataset.view));
+$$('.nav-item').forEach(el => {
+  el.onclick = () => {
+    const targetView = el.dataset.view;
+    const alreadyHere = document.getElementById('view-' + targetView).classList.contains('active');
+    // 已在 Today 頁又點 Today → 跳回今日
+    if (targetView === 'today' && alreadyHere) {
+      jumpToToday();
+      return;
+    }
+    switchView(targetView);
+  };
+});
 
 // ------- Filters -------
 $$('#filters .filter-pill').forEach(p => {
