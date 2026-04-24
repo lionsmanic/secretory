@@ -1100,19 +1100,13 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
     <p class="capture-hint">把訊息貼進來 —— LINE、Gmail、長庚即時通截圖皆可。秘書會幫你抽出任務、判斷重要性,排進行事曆。</p>
 
     <div class="textarea-wrap">
-      <textarea class="capture-input" id="captureInput" placeholder="例如:&#10;&#10;張主任:下禮拜三病房會議請你報告最新一位 HIPEC 病人的 case,要 powerpoint。&#10;&#10;或直接貼上整段訊息、email..."></textarea>
+      <textarea class="capture-input" id="captureInput" placeholder="例如:&#10;&#10;張主任:下禮拜三病房會議請你報告最新一位 HIPEC 病人的 case,要 powerpoint。&#10;&#10;可以直接貼上訊息,或用 iPhone 鍵盤的 🎤 語音輸入。"></textarea>
     </div>
 
-    <div class="capture-row">
-      <button class="btn ghost" id="btnUpload">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
-        截圖 OCR
-      </button>
-      <button class="btn ghost" id="btnVoice">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><path d="M12 19v4M8 23h8"/></svg>
-        語音輸入
-      </button>
-    </div>
+    <button class="btn ghost" id="btnUpload" style="width:100%">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+      從相簿選截圖 · OCR 辨識
+    </button>
 
     <div class="image-preview" id="imagePreview">
       <div class="image-preview-label">— 待辨識截圖 —</div>
@@ -2169,26 +2163,6 @@ $('#fileInput').onchange = async e => {
     pendingImageBase64 = ev.target.result.split(',')[1];
   };
   reader.readAsDataURL(file);
-};
-
-$('#btnVoice').onclick = () => {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    toast('這支瀏覽器不支援語音輸入', true);
-    return;
-  }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const rec = new SR();
-  rec.lang = 'zh-TW';
-  rec.continuous = false;
-  rec.interimResults = false;
-  toast('請說話…');
-  rec.onresult = e => {
-    const txt = e.results[0][0].transcript;
-    const ta = $('#captureInput');
-    ta.value = (ta.value + '\n' + txt).trim();
-  };
-  rec.onerror = e => toast('語音辨識失敗: ' + e.error, true);
-  rec.start();
 };
 
 $('#btnParse').onclick = async () => {
