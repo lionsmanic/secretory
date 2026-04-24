@@ -1861,7 +1861,187 @@ $('#btnClearDone').onclick = async () => {
   toast(`已清除 ${done.length} 件`);
 };
 
-// ------- Clipboard auto-detect -------
+// ------- 分享接收器:顯示大按鈕讓使用者點擊讀取剪貼簿 -------
+function showShareReceiver() {
+  // 若已存在就移除(避免重複)
+  const existing = document.getElementById('shareReceiver');
+  if (existing) existing.remove();
+
+  // 建立覆蓋層
+  const overlay = document.createElement('div');
+  overlay.id = 'shareReceiver';
+  overlay.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(19, 19, 15, 0.96);
+    backdrop-filter: blur(8px);
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    padding-top: calc(env(safe-area-inset-top) + 24px);
+    animation: fadeIn 0.3s ease;
+  `;
+
+  overlay.innerHTML = `
+    <div style="font-family:'Fraunces',serif;font-style:italic;font-size:28px;color:var(--accent);margin-bottom:8px;text-align:center">
+      秘書收到了
+    </div>
+    <div style="font-family:'Noto Serif TC',serif;font-size:13px;color:var(--ink-dim);letter-spacing:0.2em;margin-bottom:36px">MESSAGE RECEIVED</div>
+
+    <div id="shareStatus" style="font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--ink-soft);margin-bottom:24px;text-align:center;line-height:1.6;max-width:300px">
+      正在從剪貼簿讀取內容…
+    </div>
+
+    <button id="shareReadBtn" style="
+      padding: 18px 32px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 4px;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      min-width: 240px;
+      display: none;
+    ">讀取剪貼簿並處理</button>
+
+    <div id="sharePasteArea" style="display:none;width:100%;max-width:340px;margin-top:8px">
+      <div style="font-size:12px;color:var(--ink-dim);text-align:center;margin-bottom:12px;line-height:1.7">
+        自動讀取失敗 — 請在下方長按,<br>選「貼上」把內容貼進來
+      </div>
+      <textarea id="sharePasteInput" placeholder="長按這裡 → 貼上" style="
+        width:100%;
+        min-height:140px;
+        background:var(--bg-card);
+        border:1px solid var(--accent);
+        border-radius:4px;
+        padding:14px;
+        color:var(--ink);
+        font-family:'Noto Serif TC',serif;
+        font-size:15px;
+        outline:none;
+        resize:none;
+      "></textarea>
+      <button id="sharePasteSubmit" style="
+        width:100%;
+        margin-top:12px;
+        padding:14px;
+        background:var(--accent);
+        color:var(--bg);
+        border:none;
+        border-radius:4px;
+        font-family:'Noto Serif TC',serif;
+        font-size:15px;
+        font-weight:500;
+        letter-spacing:0.1em;
+      ">交給秘書處理</button>
+    </div>
+
+    <button id="shareCancel" style="
+      margin-top: 28px;
+      padding: 10px 20px;
+      background: transparent;
+      color: var(--ink-dim);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 3px;
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-size: 13px;
+      cursor: pointer;
+    ">取消</button>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const statusEl = overlay.querySelector('#shareStatus');
+  const readBtn = overlay.querySelector('#shareReadBtn');
+  const pasteArea = overlay.querySelector('#sharePasteArea');
+  const pasteInput = overlay.querySelector('#sharePasteInput');
+  const pasteSubmit = overlay.querySelector('#sharePasteSubmit');
+  const cancelBtn = overlay.querySelector('#shareCancel');
+
+  // 嘗試自動讀取剪貼簿
+  const tryAutoRead = async () => {
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        throw new Error('no clipboard API');
+      }
+      const text = await navigator.clipboard.readText();
+      if (!text || !text.trim()) throw new Error('empty');
+      return text.trim();
+    } catch (e) {
+      console.log('auto read failed:', e.message);
+      return null;
+    }
+  };
+
+  const processText = async (text) => {
+    statusEl.textContent = '秘書閱讀中…';
+    readBtn.style.display = 'none';
+    pasteArea.style.display = 'none';
+    cancelBtn.style.display = 'none';
+
+    $('#captureInput').value = text;
+    try {
+      const hash = await hashText(text);
+      await setSetting('lastClipHash', hash);
+    } catch(e) {}
+    // 關閉覆蓋層並觸發解析
+    setTimeout(() => {
+      overlay.remove();
+      $('#btnParse').click();
+    }, 300);
+  };
+
+  // 先自動嘗試
+  (async () => {
+    // 稍微延遲,讓頁面有時間取得焦點
+    await new Promise(r => setTimeout(r, 400));
+    const text = await tryAutoRead();
+    if (text) {
+      await processText(text);
+    } else {
+      // 自動讀失敗 → 顯示點擊按鈕(使用者互動後再試)
+      statusEl.textContent = '請點下方按鈕讓秘書讀取剪貼簿';
+      readBtn.style.display = 'block';
+    }
+  })();
+
+  // 按鈕:使用者點擊後再試一次剪貼簿讀取(這次有使用者互動,成功率高)
+  readBtn.addEventListener('click', async () => {
+    statusEl.textContent = '讀取中…';
+    readBtn.disabled = true;
+    const text = await tryAutoRead();
+    if (text) {
+      await processText(text);
+    } else {
+      // 還是失敗 → 顯示貼上 textarea
+      statusEl.textContent = '無法自動讀取 — 請手動貼上';
+      readBtn.style.display = 'none';
+      pasteArea.style.display = 'block';
+      setTimeout(() => pasteInput.focus(), 200);
+    }
+  });
+
+  // 手動貼上提交
+  pasteSubmit.addEventListener('click', async () => {
+    const text = pasteInput.value.trim();
+    if (!text) {
+      toast('請先貼上內容', true);
+      return;
+    }
+    await processText(text);
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    overlay.remove();
+  });
+}
 // 記錄最後處理過的剪貼簿內容 hash,避免重複詢問
 async function hashText(s) {
   const data = new TextEncoder().encode(s);
@@ -2053,30 +2233,8 @@ async function handleIncomingShare() {
   if (fromShare) {
     switchView('capture');
     history.replaceState({}, '', location.pathname);
-    // 延遲一下讓畫面先渲染,並取得焦點
-    setTimeout(async () => {
-      try {
-        if (!navigator.clipboard || !navigator.clipboard.readText) {
-          toast('此瀏覽器不支援讀取剪貼簿,請手動貼上', true);
-          return;
-        }
-        const clipText = await navigator.clipboard.readText();
-        if (!clipText || !clipText.trim()) {
-          toast('剪貼簿是空的 — 請確認捷徑有成功拷貝', true);
-          return;
-        }
-        $('#captureInput').value = clipText.trim();
-        toast('已從剪貼簿讀取 — 秘書處理中…');
-        // 同時把 hash 存起來避免剪貼簿偵測重複詢問
-        const hash = await hashText(clipText.trim());
-        await setSetting('lastClipHash', hash);
-        // 自動觸發解析
-        setTimeout(() => $('#btnParse').click(), 400);
-      } catch (e) {
-        console.error('clipboard read failed:', e);
-        toast('無法讀取剪貼簿,請手動貼上到下方', true);
-      }
-    }, 600);
+    // 顯示大型貼上按鈕 + 嘗試自動讀取
+    showShareReceiver();
     return;
   }
 
