@@ -793,6 +793,27 @@ hr.rule {
   background: var(--bg);
 }
 
+/* edit chips */
+.edit-chip {
+  padding: 10px 6px;
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.edit-chip:active { transform: scale(0.96); }
+.edit-chip.selected {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  font-weight: 500;
+}
+
 /* scroll fix */
 body { overflow-x: hidden; }
 
@@ -880,7 +901,16 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
       交給秘書處理
     </button>
 
-    <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none">
+    <div style="text-align:center;padding:12px 0;color:var(--ink-dim);font-family:'Fraunces',serif;font-style:italic;font-size:12px;letter-spacing:0.15em">
+      ———&nbsp;&nbsp;or&nbsp;&nbsp;———
+    </div>
+
+    <button class="btn ghost" id="btnManualAdd" style="width:100%">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      手動新增任務
+    </button>
+
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
   </div>
 </main>
 
@@ -1030,33 +1060,105 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
     <div class="modal-title" id="modalTitle">—</div>
     <div class="modal-sub" id="modalSub">Task Detail</div>
 
-    <div class="modal-field">
-      <div class="modal-field-label">來源</div>
-      <div class="modal-field-value" id="modalSource">—</div>
-    </div>
-    <div class="modal-field">
-      <div class="modal-field-label">交辦人</div>
-      <div class="modal-field-value" id="modalAssigner">—</div>
-    </div>
-    <div class="modal-field">
-      <div class="modal-field-label">Deadline</div>
-      <div class="modal-field-value" id="modalDeadline">—</div>
-    </div>
-    <div class="modal-field">
-      <div class="modal-field-label">分類 · 優先級</div>
-      <div class="modal-field-value" id="modalMeta">—</div>
-    </div>
-    <div class="modal-field">
-      <div class="modal-field-label">原始訊息</div>
-      <div class="modal-field-value" id="modalRaw" style="font-size:13px;color:var(--ink-soft);max-height:120px;overflow-y:auto;white-space:pre-wrap;font-family:'JetBrains Mono',monospace">—</div>
+    <!-- 檢視模式 -->
+    <div id="modalViewMode">
+      <div class="modal-field">
+        <div class="modal-field-label">來源</div>
+        <div class="modal-field-value" id="modalSource">—</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">交辦人</div>
+        <div class="modal-field-value" id="modalAssigner">—</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">Deadline</div>
+        <div class="modal-field-value" id="modalDeadline">—</div>
+      </div>
+      <div class="modal-field">
+        <div class="modal-field-label">分類 · 優先級</div>
+        <div class="modal-field-value" id="modalMeta">—</div>
+      </div>
+      <div class="modal-field" id="modalNoteField">
+        <div class="modal-field-label">備註</div>
+        <div class="modal-field-value" id="modalNote">—</div>
+      </div>
+      <div class="modal-field" id="modalRawField">
+        <div class="modal-field-label">原始訊息</div>
+        <div class="modal-field-value" id="modalRaw" style="font-size:13px;color:var(--ink-soft);max-height:120px;overflow-y:auto;white-space:pre-wrap;font-family:'JetBrains Mono',monospace">—</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn ghost" id="modalEdit">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          編輯
+        </button>
+        <button class="btn" id="modalToggleDone">標記完成</button>
+      </div>
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button class="btn ghost" id="modalClose">關閉</button>
+        <button class="btn" id="modalDelete" style="color:var(--urgent);border-color:var(--urgent-soft)">刪除</button>
+      </div>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn ghost" id="modalToggleDone">標記完成</button>
-      <button class="btn" id="modalClose">關閉</button>
-    </div>
-    <div style="margin-top:10px">
-      <button class="btn" id="modalDelete" style="width:100%;color:var(--urgent);border-color:var(--urgent-soft)">刪除任務</button>
+    <!-- 編輯模式 -->
+    <div id="modalEditMode" style="display:none">
+      <div class="modal-field">
+        <div class="modal-field-label">任務標題 *</div>
+        <input type="text" class="input-field" id="editTitle" placeholder="例如:整理 HIPEC case report" style="font-family:'Noto Serif TC',serif;font-size:15px">
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-field-label">交辦人</div>
+        <input type="text" class="input-field" id="editAssigner" placeholder="沒有可留空" style="font-family:'Noto Serif TC',serif;font-size:15px">
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-field-label">Deadline</div>
+        <input type="datetime-local" class="input-field" id="editDeadline" style="font-family:'JetBrains Mono',monospace">
+        <div style="margin-top:6px">
+          <button type="button" class="btn ghost" id="editClearDeadline" style="font-size:11px;padding:6px 10px;width:auto">清除 deadline</button>
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-field-label">分類</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+          <button type="button" class="edit-chip" data-cat="臨床">臨床</button>
+          <button type="button" class="edit-chip" data-cat="研究">研究</button>
+          <button type="button" class="edit-chip" data-cat="行政">行政</button>
+          <button type="button" class="edit-chip" data-cat="個人">個人</button>
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-field-label">優先級</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          <button type="button" class="edit-chip" data-pri="urgent">緊急</button>
+          <button type="button" class="edit-chip" data-pri="important">重要</button>
+          <button type="button" class="edit-chip" data-pri="normal">一般</button>
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-field-label">來源</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+          <button type="button" class="edit-chip" data-src="LINE">LINE</button>
+          <button type="button" class="edit-chip" data-src="Gmail">Gmail</button>
+          <button type="button" class="edit-chip" data-src="長庚即時通">長庚</button>
+          <button type="button" class="edit-chip" data-src="手動">手動</button>
+          <button type="button" class="edit-chip" data-src="其他">其他</button>
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <div class="modal-field-label">備註</div>
+        <textarea class="input-field" id="editNote" rows="2" placeholder="(選填)補充細節" style="font-family:'Noto Serif TC',serif;font-size:14px;resize:vertical"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn ghost" id="editCancel">取消</button>
+        <button class="btn primary" id="editSave">儲存</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1706,34 +1808,177 @@ $('#taskList').onclick = async e => {
   if (task) openModal(task.dataset.id);
 };
 
+let currentEditId = null; // 正在編輯的 task id(新增時為 null 但 editing mode)
+let isNewTask = false;
+
 function openModal(id) {
   const t = cachedTasks.find(x => x.id === id);
   if (!t) return;
+  currentEditId = id;
+  isNewTask = false;
   $('#modalTitle').textContent = t.title;
+  $('#modalSub').textContent = 'Task Detail';
   $('#modalSource').textContent = t.source || '—';
   $('#modalAssigner').textContent = t.assigner || '—';
   $('#modalDeadline').textContent = t.deadline ? new Date(t.deadline).toLocaleString('zh-TW') : '無';
-  $('#modalMeta').textContent = `${t.category || '—'} · ${t.priority}${t.note ? ' · '+t.note : ''}`;
+  $('#modalMeta').textContent = `${t.category || '—'} · ${priorityLabel(t.priority)}`;
+  $('#modalNote').textContent = t.note || '—';
+  $('#modalNoteField').style.display = t.note ? 'block' : 'none';
   $('#modalRaw').textContent = t.rawMessage || '—';
+  $('#modalRawField').style.display = t.rawMessage ? 'block' : 'none';
   $('#modalToggleDone').textContent = t.done ? '標記未完成' : '標記完成';
-  $('#modalToggleDone').dataset.id = id;
-  $('#modalDelete').dataset.id = id;
+  // 切回檢視模式
+  $('#modalViewMode').style.display = 'block';
+  $('#modalEditMode').style.display = 'none';
   $('#taskModal').classList.add('show');
 }
+
+function priorityLabel(p) {
+  return { urgent: '緊急', important: '重要', normal: '一般' }[p] || p || '—';
+}
+
+function enterEditMode(task) {
+  // 載入 task 資料到編輯表單
+  $('#editTitle').value = task.title || '';
+  $('#editAssigner').value = task.assigner || '';
+  if (task.deadline) {
+    // 轉成 datetime-local 可接受的格式 YYYY-MM-DDTHH:mm
+    const d = new Date(task.deadline);
+    const pad = n => String(n).padStart(2,'0');
+    $('#editDeadline').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } else {
+    $('#editDeadline').value = '';
+  }
+  $('#editNote').value = task.note || '';
+
+  // 設定選中的 chips
+  document.querySelectorAll('.edit-chip').forEach(c => c.classList.remove('selected'));
+  if (task.category) document.querySelector(`.edit-chip[data-cat="${task.category}"]`)?.classList.add('selected');
+  if (task.priority) document.querySelector(`.edit-chip[data-pri="${task.priority}"]`)?.classList.add('selected');
+  if (task.source) document.querySelector(`.edit-chip[data-src="${task.source}"]`)?.classList.add('selected');
+
+  $('#modalViewMode').style.display = 'none';
+  $('#modalEditMode').style.display = 'block';
+}
+
+function openNewTaskModal() {
+  currentEditId = null;
+  isNewTask = true;
+  $('#modalTitle').textContent = '新增任務';
+  $('#modalSub').textContent = 'New Task';
+  // 用預設值進入編輯模式
+  enterEditMode({
+    title: '',
+    assigner: '',
+    deadline: null,
+    category: '臨床',
+    priority: 'normal',
+    source: '手動',
+    note: ''
+  });
+  $('#taskModal').classList.add('show');
+}
+
+// chip 選擇互斥邏輯(同一 data-xxx 群組只能選一個)
+document.addEventListener('click', e => {
+  const chip = e.target.closest('.edit-chip');
+  if (!chip) return;
+  if (!chip.closest('#modalEditMode')) return;
+  // 找出同群組(同樣的 data key)
+  const attrs = ['cat', 'pri', 'src'];
+  for (const a of attrs) {
+    if (chip.dataset[a] !== undefined) {
+      chip.parentNode.querySelectorAll(`.edit-chip[data-${a}]`).forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      return;
+    }
+  }
+});
+
+$('#modalEdit').onclick = () => {
+  const t = cachedTasks.find(x => x.id === currentEditId);
+  if (t) enterEditMode(t);
+};
+
+$('#editCancel').onclick = () => {
+  if (isNewTask) {
+    $('#taskModal').classList.remove('show');
+  } else {
+    // 回到檢視模式
+    $('#modalViewMode').style.display = 'block';
+    $('#modalEditMode').style.display = 'none';
+  }
+};
+
+$('#editClearDeadline').onclick = () => {
+  $('#editDeadline').value = '';
+};
+
+$('#editSave').onclick = async () => {
+  const title = $('#editTitle').value.trim();
+  if (!title) { toast('請填寫任務標題', true); return; }
+
+  const getSelected = (attr) => {
+    const el = document.querySelector(`.edit-chip[data-${attr}].selected`);
+    return el ? el.dataset[attr] : null;
+  };
+
+  const deadlineRaw = $('#editDeadline').value;
+  let deadline = null;
+  if (deadlineRaw) {
+    const d = new Date(deadlineRaw);
+    if (!isNaN(d)) deadline = d.toISOString();
+  }
+
+  const data = {
+    title,
+    assigner: $('#editAssigner').value.trim() || null,
+    category: getSelected('cat') || '行政',
+    priority: getSelected('pri') || 'normal',
+    source: getSelected('src') || '手動',
+    deadline,
+    note: $('#editNote').value.trim()
+  };
+
+  if (isNewTask) {
+    const task = {
+      id: uid(),
+      ...data,
+      rawMessage: '',
+      done: false,
+      createdAt: Date.now()
+    };
+    await saveTask(task);
+    toast('已新增任務');
+  } else {
+    const existing = cachedTasks.find(x => x.id === currentEditId);
+    if (!existing) { toast('找不到任務', true); return; }
+    Object.assign(existing, data);
+    await saveTask(existing);
+    toast('已更新');
+  }
+
+  await setSetting('lastBriefing', null); // invalidate briefing
+  await refresh();
+  $('#taskModal').classList.remove('show');
+};
+
+$('#btnManualAdd').onclick = openNewTaskModal;
+
 $('#modalClose').onclick = () => $('#taskModal').classList.remove('show');
 $('#taskModal').onclick = e => { if (e.target.id === 'taskModal') $('#taskModal').classList.remove('show'); };
-$('#modalToggleDone').onclick = async e => {
-  const id = e.target.dataset.id;
-  const t = cachedTasks.find(x => x.id === id);
+$('#modalToggleDone').onclick = async () => {
+  const t = cachedTasks.find(x => x.id === currentEditId);
+  if (!t) return;
   t.done = !t.done;
   await saveTask(t);
   await refresh();
   $('#taskModal').classList.remove('show');
   toast(t.done ? '已標記完成' : '重新啟用');
 };
-$('#modalDelete').onclick = async e => {
+$('#modalDelete').onclick = async () => {
   if (!confirm('確定刪除這件任務?')) return;
-  await deleteTask(e.target.dataset.id);
+  await deleteTask(currentEditId);
   await refresh();
   $('#taskModal').classList.remove('show');
   toast('已刪除');
@@ -1917,6 +2162,34 @@ $('#btnClearDone').onclick = async () => {
   await refresh();
   toast(`已清除 ${done.length} 件`);
 };
+
+// ------- Debug Info (for troubleshooting PWA share flow) -------
+function showDebugInfo(info) {
+  const div = document.createElement('div');
+  div.style.cssText = `
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 10px);
+    left: 10px;
+    right: 10px;
+    background: #2a2a1f;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 12px;
+    z-index: 5000;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    line-height: 1.6;
+    max-height: 80vh;
+    overflow-y: auto;
+  `;
+  div.innerHTML = `
+    <div style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--accent);margin-bottom:8px">Debug Info</div>
+    <pre style="white-space:pre-wrap;word-break:break-all;margin:0">${JSON.stringify(info, null, 2)}</pre>
+    <button onclick="this.parentNode.remove()" style="margin-top:10px;padding:6px 14px;background:var(--accent);color:var(--bg);border:none;border-radius:3px;font-size:12px">關閉</button>
+  `;
+  document.body.appendChild(div);
+}
 
 // ------- PWA 備援:若 query 被吃掉,顯示「可能有東西要處理」的橫幅 -------
 function maybeCheckShareFromPwa() {
@@ -2340,10 +2613,23 @@ async function handleIncomingShare() {
   const shared = params.get('shared');
   const fromShare = params.get('from') === 'share';
   const launchPwa = params.get('launch') === 'pwa';
+  const debug = params.get('debug') === '1';
 
   // 偵測 PWA 啟動模式
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
+
+  // Debug 模式:顯示所有狀態資訊(加 ?debug=1 即可啟用)
+  if (debug) {
+    showDebugInfo({
+      url: location.href,
+      search: location.search,
+      isStandalone,
+      fromShare,
+      launchPwa,
+      params: Object.fromEntries(params.entries())
+    });
+  }
 
   // 組合所有文字欄位(title、text、url 可能分開傳)
   const parts = [title, text, url].filter(Boolean);
@@ -2364,7 +2650,7 @@ async function handleIncomingShare() {
     return;
   }
 
-  // 明確從捷徑來(URL 有 ?from=share)
+  // 明確從捷徑來(URL 有 ?from=share)→ 最優先
   if (fromShare) {
     switchView('capture');
     history.replaceState({}, '', location.pathname);
@@ -2372,13 +2658,15 @@ async function handleIncomingShare() {
     return;
   }
 
-  // PWA 備援:若是 standalone 模式但 query 被 iOS 吃掉
-  // (使用者從主畫面點開 PWA 時會帶 launch=pwa;若沒帶,可能是被 share intent 叫醒但 query 遺失)
-  // 此時檢查是否在最近 5 秒內有新的剪貼簿內容(表示可能剛被捷徑拷貝)
-  if (isStandalone && !launchPwa && !params.toString()) {
-    // 沒有任何 query 且是 PWA 模式 → 可能 query 被吃了
-    // 顯示一個較小的詢問橫幅,而非強制介入
-    maybeCheckShareFromPwa();
+  // PWA 備援 v2:若是 standalone 模式 + 沒有 launch=pwa 標記
+  // 這表示 app 不是從主畫面自己點的,很可能是 share intent 把它叫醒但 query 被吞
+  // 改用「自動進入接收畫面」而非「顯示橫幅等使用者點」
+  if (isStandalone && !launchPwa) {
+    // 給一個短延遲讓畫面先渲染,然後自動進入接收畫面
+    setTimeout(() => {
+      switchView('capture');
+      showShareReceiver();
+    }, 300);
     return;
   }
 
