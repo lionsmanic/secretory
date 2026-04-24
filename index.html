@@ -2971,21 +2971,12 @@ function showShareReceiver() {
     }, 300);
   };
 
-  // 先自動嘗試
-  (async () => {
-    // 稍微延遲,讓頁面有時間取得焦點
-    await new Promise(r => setTimeout(r, 400));
-    const text = await tryAutoRead();
-    if (text) {
-      await processText(text);
-    } else {
-      // 自動讀失敗 → 顯示點擊按鈕(使用者互動後再試)
-      statusEl.textContent = '請點下方按鈕讓秘書讀取剪貼簿';
-      readBtn.style.display = 'block';
-    }
-  })();
+  // 策略:不自動嘗試讀取(iOS 在這種情境幾乎都會失敗),
+  // 直接請使用者點大按鈕,確保有「使用者互動」才讀剪貼簿
+  statusEl.innerHTML = '請點下方按鈕讀取剪貼簿<br><span style="font-size:11px;opacity:0.6;letter-spacing:0.1em">iOS 需要你點擊一下才允許讀取</span>';
+  readBtn.style.display = 'block';
 
-  // 按鈕:使用者點擊後再試一次剪貼簿讀取(這次有使用者互動,成功率高)
+  // 按鈕:使用者點擊後讀剪貼簿(有使用者互動,成功率最高)
   readBtn.addEventListener('click', async () => {
     statusEl.textContent = '讀取中…';
     readBtn.disabled = true;
@@ -2993,11 +2984,15 @@ function showShareReceiver() {
     if (text) {
       await processText(text);
     } else {
-      // 還是失敗 → 顯示貼上 textarea
-      statusEl.textContent = '無法自動讀取 — 請手動貼上';
+      // 還是失敗 → 顯示貼上 textarea + 清楚引導
+      statusEl.innerHTML = '剪貼簿讀取失敗<br><span style="font-size:12px;opacity:0.8">可能原因:Safari 權限被拒,或 OCR 沒抓到文字</span>';
       readBtn.style.display = 'none';
       pasteArea.style.display = 'block';
-      setTimeout(() => pasteInput.focus(), 200);
+      // 直接 focus 並嘗試顯示貼上選單
+      setTimeout(() => {
+        pasteInput.focus();
+        // 有些 iOS 版本在 focus 時會自動顯示 paste bubble
+      }, 200);
     }
   });
 
