@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1a1a1a">
+<meta name="theme-color" content="#faf6ec">
 <title>秘書 · Secretary</title>
 
 <!-- PWA Manifest (inline) -->
-<link rel="manifest" href='data:application/manifest+json,{"name":"秘書 Secretary","short_name":"秘書","start_url":"./?launch=pwa","scope":"./","display":"standalone","background_color":"%2313130f","theme_color":"%2313130f","orientation":"portrait","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%2313130f%22/><text x=%2296%22 y=%22130%22 font-family=%22serif%22 font-size=%22110%22 fill=%22%23d4af7a%22 text-anchor=%22middle%22 font-style=%22italic%22>S</text></svg>","sizes":"192x192","type":"image/svg+xml","purpose":"any"},{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 fill=%22%2313130f%22/><text x=%22256%22 y=%22345%22 font-family=%22serif%22 font-size=%22290%22 fill=%22%23d4af7a%22 text-anchor=%22middle%22 font-style=%22italic%22>S</text></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}'>
-<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%2313130f%22/><text x=%2296%22 y=%22130%22 font-family=%22serif%22 font-size=%22110%22 fill=%22%23d4af7a%22 text-anchor=%22middle%22 font-style=%22italic%22>S</text></svg>'>
+<link rel="manifest" href='data:application/manifest+json,{"name":"秘書 Secretary","short_name":"秘書","start_url":"./?launch=pwa","scope":"./","display":"standalone","background_color":"%23faf6ec","theme_color":"%23faf6ec","orientation":"portrait","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%23faf6ec%22/><text x=%2296%22 y=%22130%22 font-family=%22serif%22 font-size=%22110%22 fill=%22%239c6f30%22 text-anchor=%22middle%22 font-style=%22italic%22>S</text></svg>","sizes":"192x192","type":"image/svg+xml","purpose":"any"},{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 fill=%22%23faf6ec%22/><text x=%22256%22 y=%22345%22 font-family=%22serif%22 font-size=%22290%22 fill=%22%239c6f30%22 text-anchor=%22middle%22 font-style=%22italic%22>S</text></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any"}]}'>
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%23faf6ec%22/><text x=%2296%22 y=%22130%22 font-family=%22serif%22 font-size=%22110%22 fill=%22%239c6f30%22 text-anchor=%22middle%22 font-style=%22italic%22>S</text></svg>'>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,23 +18,26 @@
 
 <style>
 :root {
-  --bg: #13130f;
-  --bg-soft: #1c1c17;
-  --bg-card: #20201a;
-  --bg-elev: #26261f;
-  --ink: #ede8d8;
-  --ink-soft: #a8a395;
-  --ink-dim: #6e6a5e;
-  --accent: #d4af7a;
-  --accent-soft: #b8935d;
-  --urgent: #c85a3c;
-  --urgent-soft: #8a3f2a;
-  --clinical: #7a9b6e;
-  --research: #6a8caf;
-  --admin: #b89968;
-  --personal: #a67b8f;
-  --hairline: rgba(237, 232, 216, 0.08);
-  --hairline-strong: rgba(237, 232, 216, 0.16);
+  /* 明亮配色:米白底 + 深咖啡字 + 金駝強調 */
+  --bg: #faf6ec;              /* 主背景:溫暖米白 */
+  --bg-soft: #f3ecdb;          /* 較深米色 */
+  --bg-card: #fffbf0;          /* 卡片背景:近白 */
+  --bg-elev: #ede4cb;          /* 按下/hover */
+  --ink: #2a2418;              /* 主要文字:深咖啡(高對比) */
+  --ink-soft: #5c4f3a;         /* 次要文字 */
+  --ink-dim: #8a7a5e;          /* 灰階輔助 */
+  --accent: #9c6f30;           /* 強調色:深金駝(對淺背景才看得清) */
+  --accent-soft: #b8915c;
+  --accent-bg: #efe2c3;        /* 強調色的淡背景版 */
+  --urgent: #b23a1f;           /* 緊急紅 */
+  --urgent-soft: #d97a5e;
+  --urgent-bg: #fbe2d8;
+  --clinical: #4a7a3f;
+  --research: #3a6a8e;
+  --admin: #8a6a30;
+  --personal: #7a4862;
+  --hairline: rgba(60, 50, 30, 0.10);
+  --hairline-strong: rgba(60, 50, 30, 0.22);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -43,18 +46,20 @@ html, body {
   background: var(--bg);
   color: var(--ink);
   font-family: 'Noto Serif TC', 'Fraunces', Georgia, serif;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.6;
   min-height: 100vh;
   min-height: 100dvh;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   background:
-    radial-gradient(ellipse at top, rgba(212, 175, 122, 0.04), transparent 50%),
-    radial-gradient(ellipse at bottom right, rgba(106, 140, 175, 0.03), transparent 50%),
+    radial-gradient(ellipse at top, rgba(156, 111, 48, 0.06), transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(58, 106, 142, 0.04), transparent 50%),
     var(--bg);
   padding-top: env(safe-area-inset-top);
   padding-bottom: calc(76px + env(safe-area-inset-bottom));
@@ -72,7 +77,7 @@ body {
 .header-title {
   font-family: 'Fraunces', serif;
   font-style: italic;
-  font-weight: 300;
+  font-weight: 400;
   font-size: 32px;
   letter-spacing: -0.02em;
   color: var(--accent);
@@ -86,6 +91,7 @@ body {
   color: var(--ink-dim);
   text-transform: uppercase;
   margin-top: 6px;
+  font-weight: 500;
 }
 
 .header-date {
@@ -121,8 +127,8 @@ body {
 
 /* ============ BRIEFING ============ */
 .briefing {
-  background: linear-gradient(135deg, rgba(212, 175, 122, 0.08), rgba(212, 175, 122, 0.02));
-  border: 1px solid rgba(212, 175, 122, 0.2);
+  background: linear-gradient(135deg, rgba(156, 111, 48, 0.12), rgba(156, 111, 48, 0.04));
+  border: 1px solid rgba(156, 111, 48, 0.28);
   border-radius: 4px;
   padding: 20px;
   margin-bottom: 24px;
@@ -146,10 +152,11 @@ body {
   margin-bottom: 8px;
 }
 .briefing-text {
-  font-size: 14px;
+  font-size: 14.5px;
   color: var(--ink);
-  line-height: 1.7;
+  line-height: 1.75;
   white-space: pre-wrap;
+  font-weight: 500;
 }
 .briefing-loading {
   color: var(--ink-dim);
@@ -187,7 +194,7 @@ body {
 .task {
   background: var(--bg-card);
   border: 1px solid var(--hairline);
-  border-radius: 3px;
+  border-radius: 4px;
   padding: 14px 16px;
   display: flex;
   gap: 12px;
@@ -195,6 +202,7 @@ body {
   transition: all 0.2s ease;
   position: relative;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(60, 50, 30, 0.04);
 }
 .task:active { transform: scale(0.99); background: var(--bg-elev); }
 .task.urgent { border-left: 3px solid var(--urgent); }
@@ -228,9 +236,10 @@ body {
 .task-title {
   font-size: 15px;
   color: var(--ink);
-  line-height: 1.4;
-  margin-bottom: 4px;
+  line-height: 1.45;
+  margin-bottom: 6px;
   word-break: break-word;
+  font-weight: 600;
 }
 
 .task-meta {
@@ -250,12 +259,12 @@ body {
   padding: 2px 8px;
   border-radius: 2px;
   letter-spacing: 0.1em;
-  font-weight: 500;
+  font-weight: 600;
 }
-.tag.clinical { background: rgba(122, 155, 110, 0.15); color: var(--clinical); }
-.tag.research { background: rgba(106, 140, 175, 0.15); color: var(--research); }
-.tag.admin { background: rgba(184, 153, 104, 0.15); color: var(--admin); }
-.tag.personal { background: rgba(166, 123, 143, 0.15); color: var(--personal); }
+.tag.clinical { background: rgba(74, 122, 63, 0.18); color: var(--clinical); }
+.tag.research { background: rgba(58, 106, 142, 0.18); color: var(--research); }
+.tag.admin { background: rgba(138, 106, 48, 0.18); color: var(--admin); }
+.tag.personal { background: rgba(122, 72, 98, 0.18); color: var(--personal); }
 
 .deadline {
   color: var(--ink-soft);
@@ -623,10 +632,10 @@ textarea.capture-input::placeholder {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(19, 19, 15, 0.92);
+  background: rgba(250, 246, 236, 0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--hairline-strong);
   padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -643,12 +652,13 @@ textarea.capture-input::placeholder {
   transition: color 0.2s;
 }
 .nav-item.active { color: var(--accent); }
-.nav-item .icon { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.4; }
+.nav-item .icon { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; }
 .nav-item .label {
   font-family: 'Fraunces', serif;
   font-style: italic;
   font-size: 11px;
   letter-spacing: 0.05em;
+  font-weight: 500;
 }
 
 /* ============ FILTER PILLS ============ */
@@ -683,14 +693,14 @@ textarea.capture-input::placeholder {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(30, 25, 15, 0.35);
   backdrop-filter: blur(4px);
   z-index: 1000;
   align-items: flex-end;
 }
 .modal.show { display: flex; }
 .modal-content {
-  background: var(--bg-soft);
+  background: var(--bg-card);
   width: 100%;
   max-height: 80vh;
   border-radius: 12px 12px 0 0;
@@ -699,6 +709,7 @@ textarea.capture-input::placeholder {
   overflow-y: auto;
   animation: slideUp 0.3s ease;
   border-top: 1px solid var(--hairline-strong);
+  box-shadow: 0 -8px 30px rgba(60, 50, 30, 0.12);
 }
 @keyframes slideUp {
   from { transform: translateY(100%); }
@@ -761,7 +772,8 @@ textarea.capture-input::placeholder {
   transition: all 0.3s;
   z-index: 2000;
   pointer-events: none;
-  font-weight: 500;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(60, 50, 30, 0.25);
 }
 .toast.show {
   opacity: 1;
@@ -1321,6 +1333,35 @@ input, textarea { font-size: 16px; } /* prevent zoom on focus */
       <button class="btn ghost" id="btnCopyBriefUrls" style="width:100%;font-size:12px">
         複製兩個 action 網址
       </button>
+    </div>
+  </div>
+
+  <div class="settings-group">
+    <div class="settings-label">行程提醒 · Reminders</div>
+    <div class="settings-desc">任務開始前自動推播通知 + 鈴聲(需先啟用通知權限)。秘書 app 在前景或剛打開時生效。</div>
+    <div style="padding:12px;background:var(--bg-card);border-radius:3px;border:1px solid var(--hairline);display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div>
+        <div style="font-size:14px;color:var(--ink);font-weight:600">啟用行程提醒</div>
+        <div style="font-size:11px;color:var(--ink-dim);margin-top:4px">每 30 秒掃描任務</div>
+      </div>
+      <label class="toggle" style="position:relative;display:inline-block;width:44px;height:24px">
+        <input type="checkbox" id="reminderToggle" style="opacity:0;width:0;height:0">
+        <span class="slider" style="position:absolute;inset:0;background:var(--hairline-strong);border-radius:24px;cursor:pointer;transition:0.3s"></span>
+      </label>
+    </div>
+    <div class="modal-field">
+      <div class="modal-field-label">提前多少分鐘提醒</div>
+      <select class="input-field" id="reminderLeadSelect" style="font-family:'Noto Serif TC',serif;font-size:14px">
+        <option value="15">15 分鐘前</option>
+        <option value="30">30 分鐘前</option>
+        <option value="60" selected>1 小時前</option>
+        <option value="120">2 小時前</option>
+        <option value="180">3 小時前</option>
+      </select>
+    </div>
+    <div class="action-row">
+      <button class="btn ghost" id="btnTestReminder">測試響鈴</button>
+      <button class="btn ghost" id="btnResetNotified">重置所有提醒</button>
     </div>
   </div>
 
@@ -2707,6 +2748,7 @@ $('#editSave').onclick = async () => {
       ...data,
       rawMessage: '',
       done: false,
+      notified: false,
       createdAt: Date.now()
     };
     await saveTask(task);
@@ -2714,7 +2756,12 @@ $('#editSave').onclick = async () => {
   } else {
     const existing = cachedTasks.find(x => x.id === currentEditId);
     if (!existing) { toast('找不到任務', true); return; }
+    const oldDeadline = existing.deadline;
     Object.assign(existing, data);
+    // 若 deadline 改變 → 重設 notified,讓新時間能再次觸發提醒
+    if (existing.deadline !== oldDeadline) {
+      existing.notified = false;
+    }
     await saveTask(existing);
     toast('已更新');
   }
@@ -2802,6 +2849,89 @@ $('#btnRefreshBriefing').onclick = async () => {
   toast('已重整');
 };
 
+// ---- 行程提醒 ----
+async function initReminderUI() {
+  const enabled = await getSetting('reminderEnabled');
+  $('#reminderToggle').checked = !!enabled;
+  const lead = (await getSetting('reminderLeadMinutes')) || 60;
+  $('#reminderLeadSelect').value = String(lead);
+}
+
+$('#reminderToggle').onchange = async e => {
+  const on = e.target.checked;
+  if (on) {
+    // 啟用前先確認通知權限
+    if (Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        toast('需要通知權限才能啟用提醒', true);
+        e.target.checked = false;
+        return;
+      }
+    } else if (Notification.permission === 'denied') {
+      toast('通知權限被拒,請到 Safari 設定開啟', true);
+      e.target.checked = false;
+      return;
+    }
+    await setSetting('reminderEnabled', true);
+    startReminderLoop();
+    toast('行程提醒已啟用 — 開始前會通知你');
+  } else {
+    await setSetting('reminderEnabled', false);
+    stopReminderLoop();
+    toast('已關閉');
+  }
+};
+
+$('#reminderLeadSelect').onchange = async e => {
+  const mins = parseInt(e.target.value);
+  await setSetting('reminderLeadMinutes', mins);
+  // 重設所有 notified,讓改了提前時間後重新評估
+  for (const t of cachedTasks) {
+    if (!t.done && t.notified) {
+      const dl = new Date(t.deadline);
+      const now = new Date();
+      // 只有「還沒到提醒時間」的任務才能重新提醒
+      if (dl > new Date(now.getTime() + mins * 60000)) {
+        t.notified = false;
+        await saveTask(t);
+      }
+    }
+  }
+  await refresh();
+  toast(`改為提前 ${mins} 分鐘`);
+};
+
+$('#btnTestReminder').onclick = async () => {
+  if (Notification.permission !== 'granted') {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { toast('需要通知權限', true); return; }
+  }
+  // 試發一個測試通知 + 響鈴
+  new Notification('⏰ 秘書 · 測試提醒', {
+    body: '這是測試 — 真實提醒會在任務開始前響起',
+  });
+  const audio = getReminderAudio();
+  if (audio) audio.play();
+  toast('已發送測試通知');
+};
+
+$('#btnResetNotified').onclick = async () => {
+  if (!confirm('重置所有任務的提醒狀態?\n(已通知過的任務會重新進入待提醒)')) return;
+  let cnt = 0;
+  for (const t of cachedTasks) {
+    if (t.notified) {
+      t.notified = false;
+      await saveTask(t);
+      cnt++;
+    }
+  }
+  await refresh();
+  toast(`已重置 ${cnt} 件任務的提醒狀態`);
+  // 重置後立刻檢查一次
+  setTimeout(checkReminders, 500);
+};
+
 $('#btnEnableNotify').onclick = async () => {
   if (!('Notification' in window)) { toast('此瀏覽器不支援通知', true); return; }
   const perm = await Notification.requestPermission();
@@ -2844,8 +2974,128 @@ function scheduleBriefing() {
   });
 }
 
+// ==============================================
+// 行程提醒系統 — 任務開始前 N 分鐘鬧鈴
+// ==============================================
+// 預設提前 60 分鐘提醒,可在 Settings 調整
+// 機制:每 30 秒掃描一次未完成任務,進入提醒窗口時:
+//   1. 發系統通知(iOS 鎖屏可見)
+//   2. 播放提示音(如果 app 在前景)
+//   3. 在任務上標記 notified,避免重複
+
+let reminderCheckTimer = null;
+let reminderAudio = null;
+
+function getReminderAudio() {
+  if (reminderAudio) return reminderAudio;
+  // 用 Web Audio 合成一個溫和的鈴聲(2 短音)
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return null;
+    reminderAudio = {
+      play: () => {
+        try {
+          const ctx = new AudioContext();
+          const playTone = (freq, start, duration) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, ctx.currentTime + start);
+            gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + start + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + start);
+            osc.stop(ctx.currentTime + start + duration);
+          };
+          playTone(880, 0, 0.3);     // A5
+          playTone(1108, 0.25, 0.4); // C#6
+        } catch(e) { console.log('audio play fail:', e); }
+      }
+    };
+    return reminderAudio;
+  } catch(e) {
+    return null;
+  }
+}
+
+async function checkReminders() {
+  const enabled = await getSetting('reminderEnabled');
+  if (!enabled) return;
+  if (Notification.permission !== 'granted') return;
+
+  const leadMin = (await getSetting('reminderLeadMinutes')) || 60;
+  const now = new Date();
+  const windowStart = now;
+  const windowEnd = new Date(now.getTime() + leadMin * 60000);
+
+  let triggered = 0;
+  for (const t of cachedTasks) {
+    if (t.done || !t.deadline) continue;
+    if (t.notified) continue;  // 已通知過
+    const dl = new Date(t.deadline);
+    // 只在「現在 ≤ deadline ≤ 現在+提前時間」這個窗口觸發
+    if (dl >= windowStart && dl <= windowEnd) {
+      // 觸發通知
+      const minsLeft = Math.round((dl - now) / 60000);
+      const timeStr = dl.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+      try {
+        const notif = new Notification(`⏰ ${t.title}`, {
+          body: `${minsLeft} 分鐘後開始 (${timeStr})${t.assigner ? ' · ' + t.assigner : ''}${t.note ? '\n' + t.note : ''}`,
+          tag: 'reminder-' + t.id,  // 同一任務只會有一個通知,新的會取代舊的
+          requireInteraction: false,
+          // iOS 會用預設聲音
+        });
+        // 點通知 → 打開 app(自動)
+        notif.onclick = () => { window.focus(); notif.close(); };
+      } catch(e) {
+        console.log('notification fail:', e);
+      }
+      // 播放提示音(只在 app 前景才會響)
+      if (document.visibilityState === 'visible') {
+        const audio = getReminderAudio();
+        if (audio) audio.play();
+      }
+      // 標記已通知
+      t.notified = true;
+      await saveTask(t);
+      triggered++;
+    }
+    // 對於已經逾期(deadline < now),不再提醒,但也標記避免日後又跑出來
+    if (dl < now && !t.notified) {
+      t.notified = true;
+      await saveTask(t);
+    }
+  }
+  if (triggered > 0) {
+    cachedTasks = await allTasks();
+  }
+}
+
+function startReminderLoop() {
+  if (reminderCheckTimer) clearInterval(reminderCheckTimer);
+  // 立刻檢查一次,然後每 30 秒檢查
+  checkReminders();
+  reminderCheckTimer = setInterval(checkReminders, 30 * 1000);
+}
+
+function stopReminderLoop() {
+  if (reminderCheckTimer) {
+    clearInterval(reminderCheckTimer);
+    reminderCheckTimer = null;
+  }
+}
+
+// 重設任務的 notified 標記(用於 deadline 改變或編輯後)
+async function resetNotifiedIfNeeded(task, oldDeadline) {
+  if (task.deadline !== oldDeadline) {
+    task.notified = false;
+  }
+}
+
 // ------- Export ICS -------
-function toICS(tasks) {
+function toICS(tasks, leadMin = 60) {
   const pad = n => String(n).padStart(2,'0');
   const icsDate = d => {
     const dt = new Date(d);
@@ -2864,7 +3114,7 @@ function toICS(tasks) {
       `DESCRIPTION:${escapeICS([t.category, t.assigner, t.note].filter(Boolean).join(' · '))}`,
       'BEGIN:VALARM',
       'ACTION:DISPLAY',
-      'TRIGGER:-PT30M',
+      `TRIGGER:-PT${leadMin}M`,
       `DESCRIPTION:${escapeICS(t.title)}`,
       'END:VALARM',
       'END:VEVENT'
@@ -2874,10 +3124,12 @@ function toICS(tasks) {
 }
 function escapeICS(s) { return String(s||'').replace(/[\\;,]/g, m => '\\'+m).replace(/\n/g,'\\n'); }
 
-$('#btnExportICS').onclick = () => {
+$('#btnExportICS').onclick = async () => {
   const withDeadline = cachedTasks.filter(t => !t.done && t.deadline);
   if (withDeadline.length === 0) { toast('沒有含 deadline 的待辦任務', true); return; }
-  const ics = toICS(cachedTasks);
+  // 使用使用者設定的提前時間
+  const leadMin = (await getSetting('reminderLeadMinutes')) || 60;
+  const ics = toICS(cachedTasks, leadMin);
   const blob = new Blob([ics], { type: 'text/calendar' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -2885,7 +3137,7 @@ $('#btnExportICS').onclick = () => {
   a.download = `secretary-${new Date().toISOString().split('T')[0]}.ics`;
   a.click();
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  toast(`已匯出 ${withDeadline.length} 件`);
+  toast(`已匯出 ${withDeadline.length} 件(提前 ${leadMin} 分鐘提醒)`);
 };
 
 $('#btnCopyToday').onclick = async () => {
@@ -3381,9 +3633,11 @@ async function init() {
   await refresh();
   await makeBriefing();
   scheduleBriefing();
+  startReminderLoop();  // 啟動行程提醒
 
   // 新功能初始化
   await initClipToggle();
+  await initReminderUI();
   registerServiceWorker();
 
   // 進 app 時檢查剪貼簿(延遲一下讓畫面先渲染 + 等 focus 才能讀)
