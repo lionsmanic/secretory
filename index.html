@@ -2923,24 +2923,196 @@ $('#reminderLeadSelect').onchange = async e => {
 };
 
 $('#btnTestReminder').onclick = async () => {
-  if (Notification.permission !== 'granted') {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') { toast('需要通知權限', true); return; }
-  }
-  // 試發一個測試通知 + 響鈴
-  // 注意:必須在使用者點擊事件內「同步」播放,否則 iOS 會擋
-  const played = playReminderSound();
-  try {
-    new Notification('⏰ 秘書 · 測試提醒', {
-      body: '這是測試 — 真實提醒會在任務開始前響起',
-    });
-  } catch(e) {}
-  if (played) {
-    toast('已發送測試通知 + 響鈴');
+  // 完整診斷 + 多層測試
+  const results = [];
+
+  // 1. 檢查通知 API
+  if (!('Notification' in window)) {
+    results.push({ ok: false, item: '通知 API', msg: '此瀏覽器不支援' });
   } else {
-    toast('通知已發出,但聲音播放失敗(請確認手機未靜音)', true);
+    results.push({ ok: true, item: '通知 API', msg: '支援' });
+
+    // 1b. 檢查權限
+    if (Notification.permission === 'denied') {
+      results.push({ ok: false, item: '通知權限', msg: '被拒絕 — 需到 Safari 設定開啟' });
+    } else if (Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      results.push({ ok: perm === 'granted', item: '通知權限', msg: perm === 'granted' ? '剛授權' : '使用者未授權' });
+    } else {
+      results.push({ ok: true, item: '通知權限', msg: '已授權' });
+    }
   }
+
+  // 2. 嘗試發通知
+  let notifSuccess = false;
+  if (Notification.permission === 'granted') {
+    try {
+      // 優先用 Service Worker(iOS PWA 必要)
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const reg = await navigator.serviceWorker.ready;
+        await reg.showNotification('⏰ 秘書 · 測試', {
+          body: '這是測試通知 — SW 路徑',
+          tag: 'test-reminder',
+          requireInteraction: false,
+        });
+        notifSuccess = true;
+        results.push({ ok: true, item: '通知顯示', msg: '透過 Service Worker 發送' });
+      } else {
+        // Fallback: 直接 new Notification
+        const n = new Notification('⏰ 秘書 · 測試', {
+          body: '這是測試通知 — 直接路徑',
+          tag: 'test-reminder',
+        });
+        notifSuccess = true;
+        results.push({ ok: true, item: '通知顯示', msg: '直接發送(可能在 PWA 鎖屏不顯示)' });
+      }
+    } catch (e) {
+      results.push({ ok: false, item: '通知顯示', msg: '失敗: ' + e.message });
+    }
+  }
+
+  // 3. 嘗試播放聲音
+  let audioSuccess = false;
+  try {
+    const ctx = ensureAudioCtx();
+    if (!ctx) {
+      results.push({ ok: false, item: '音訊系統', msg: '瀏覽器不支援 Web Audio' });
+    } else {
+      // 必須先 resume
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+      results.push({ ok: true, item: '音訊狀態', msg: 'state=' + ctx.state });
+
+      // 播 3 個 tone
+      const playTone = (freq, startOffset, duration) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t0 = ctx.currentTime + startOffset;
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.5, t0 + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + duration);
+      };
+      playTone(1047, 0, 0.4);
+      playTone(1319, 0.30, 0.4);
+      playTone(1568, 0.60, 0.7);
+      audioSuccess = true;
+      results.push({ ok: true, item: '音訊播放', msg: '已送出 — 若沒聲音請檢查靜音/音量' });
+    }
+  } catch(e) {
+    results.push({ ok: false, item: '音訊播放', msg: '失敗: ' + e.message });
+  }
+
+  // 4. 嘗試震動(iOS 不支援,但 Android 可以)
+  if ('vibrate' in navigator) {
+    try {
+      navigator.vibrate([200, 100, 200]);
+      results.push({ ok: true, item: '震動', msg: '已觸發(iPhone 不支援,正常)' });
+    } catch(e) {
+      results.push({ ok: false, item: '震動', msg: 'API 拒絕' });
+    }
+  }
+
+  // 5. 檢查 PWA 模式
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  results.push({ ok: true, item: '執行模式', msg: isStandalone ? 'PWA (主畫面)' : 'Safari' });
+
+  // 6. 檢查 SW
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    results.push({
+      ok: regs.length > 0,
+      item: 'Service Worker',
+      msg: regs.length > 0 ? '已註冊 ' + regs.length + ' 個' : '未註冊(iOS Blob SW 受限)'
+    });
+  }
+
+  // 7. 永遠顯示視覺 fallback(即使其他都失敗也能看見)
+  showVisualAlert('⏰ 測試提醒', '這是視覺 fallback — 即使通知失敗也能看到');
+
+  // 顯示診斷結果
+  showDiagnosticReport(results);
 };
+
+// 全螢幕視覺通知(通知 API 失敗時的 fallback)
+function showVisualAlert(title, body) {
+  const old = document.getElementById('visualAlert');
+  if (old) old.remove();
+  const div = document.createElement('div');
+  div.id = 'visualAlert';
+  div.style.cssText = `
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 14px);
+    left: 14px;
+    right: 14px;
+    background: var(--accent);
+    color: #faf8f3;
+    padding: 16px 20px;
+    border-radius: 8px;
+    z-index: 9999;
+    font-family: 'Noto Serif TC', serif;
+    box-shadow: 0 6px 28px rgba(40, 36, 28, 0.4);
+    animation: slideDown 0.4s ease;
+  `;
+  div.innerHTML = `
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px">${escape(title)}</div>
+    <div style="font-size:13px;opacity:0.95;line-height:1.5">${escape(body)}</div>
+  `;
+  if (!document.getElementById('valAnim')) {
+    const st = document.createElement('style');
+    st.id = 'valAnim';
+    st.textContent = '@keyframes slideDown { from { transform: translateY(-200%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }';
+    document.head.appendChild(st);
+  }
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 5000);
+  div.onclick = () => div.remove();
+}
+
+// 顯示診斷報告
+function showDiagnosticReport(results) {
+  const old = document.getElementById('diagReport');
+  if (old) old.remove();
+  const div = document.createElement('div');
+  div.id = 'diagReport';
+  div.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 18, 14, 0.9);
+    z-index: 10000;
+    display: flex;
+    align-items: flex-end;
+    padding: 14px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  `;
+  const items = results.map(r => `
+    <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--hairline)">
+      <div style="font-size:18px;line-height:1.2">${r.ok ? '✓' : '✗'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;color:${r.ok ? 'var(--clinical)' : 'var(--urgent)'};font-size:13px">${escape(r.item)}</div>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;word-break:break-word">${escape(r.msg)}</div>
+      </div>
+    </div>
+  `).join('');
+  div.innerHTML = `
+    <div style="background:var(--bg-card);width:100%;max-height:80vh;border-radius:12px;padding:20px;overflow-y:auto;border:1px solid var(--hairline-strong)">
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:22px;color:var(--accent);margin-bottom:4px;font-weight:600">提醒系統診斷</div>
+      <div style="font-size:11px;color:var(--ink-dim);letter-spacing:0.15em;margin-bottom:16px;font-weight:600">DIAGNOSTIC REPORT</div>
+      ${items}
+      <button id="diagClose" style="margin-top:20px;width:100%;padding:14px;background:var(--accent);color:#faf8f3;border:none;border-radius:4px;font-family:'Noto Serif TC',serif;font-size:14px;font-weight:600">關閉</button>
+    </div>
+  `;
+  document.body.appendChild(div);
+  div.querySelector('#diagClose').onclick = () => div.remove();
+  div.onclick = e => { if (e.target === div) div.remove(); };
+}
 
 $('#btnResetNotified').onclick = async () => {
   if (!confirm('重置所有任務的提醒狀態?\n(已通知過的任務會重新進入待提醒)')) return;
@@ -3012,6 +3184,7 @@ function scheduleBriefing() {
 let reminderCheckTimer = null;
 // 全域共用 AudioContext,首次使用者互動時建立
 let _audioCtx = null;
+let _audioUnlocked = false;
 
 function ensureAudioCtx() {
   if (_audioCtx) {
@@ -3032,11 +3205,35 @@ function ensureAudioCtx() {
   }
 }
 
+// iOS 解鎖音訊:第一次使用者互動時播個 silent buffer
+function unlockAudio() {
+  if (_audioUnlocked) return;
+  const ctx = ensureAudioCtx();
+  if (!ctx) return;
+  try {
+    // 播一個 1 sample 的靜音 buffer 來「啟動」音訊
+    const buffer = ctx.createBuffer(1, 1, 22050);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    if (source.start) source.start(0);
+    else if (source.noteOn) source.noteOn(0);
+    if (ctx.state === 'suspended') ctx.resume();
+    _audioUnlocked = true;
+  } catch(e) {
+    console.log('audio unlock fail:', e);
+  }
+}
+
 function playReminderSound() {
+  unlockAudio();
   const ctx = ensureAudioCtx();
   if (!ctx) return false;
+  if (ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
   try {
-    const playTone = (freq, startOffset, duration, gainPeak = 0.35) => {
+    const playTone = (freq, startOffset, duration, gainPeak = 0.5) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
@@ -3061,14 +3258,13 @@ function playReminderSound() {
   }
 }
 
-// 在任何使用者點擊時暖機 AudioContext(iOS 解鎖音訊用)
-document.addEventListener('click', () => { ensureAudioCtx(); }, { once: false, capture: true });
-document.addEventListener('touchstart', () => { ensureAudioCtx(); }, { once: false, capture: true, passive: true });
+// 在任何使用者點擊時暖機 AudioContext + 解鎖音訊(iOS 解鎖音訊用)
+document.addEventListener('click', unlockAudio, { capture: true });
+document.addEventListener('touchstart', unlockAudio, { capture: true, passive: true });
 
 async function checkReminders() {
   const enabled = await getSetting('reminderEnabled');
   if (!enabled) return;
-  if (Notification.permission !== 'granted') return;
 
   const leadMin = (await getSetting('reminderLeadMinutes')) || 60;
   const now = new Date();
@@ -3085,22 +3281,43 @@ async function checkReminders() {
       // 觸發通知
       const minsLeft = Math.round((dl - now) / 60000);
       const timeStr = dl.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
-      try {
-        const notif = new Notification(`⏰ ${t.title}`, {
-          body: `${minsLeft} 分鐘後開始 (${timeStr})${t.assigner ? ' · ' + t.assigner : ''}${t.note ? '\n' + t.note : ''}`,
-          tag: 'reminder-' + t.id,  // 同一任務只會有一個通知,新的會取代舊的
-          requireInteraction: false,
-          // iOS 會用預設聲音
-        });
-        // 點通知 → 打開 app(自動)
-        notif.onclick = () => { window.focus(); notif.close(); };
-      } catch(e) {
-        console.log('notification fail:', e);
+      const notifTitle = `⏰ ${t.title}`;
+      const notifBody = `${minsLeft} 分鐘後開始 (${timeStr})${t.assigner ? ' · ' + t.assigner : ''}${t.note ? '\n' + t.note : ''}`;
+
+      // 試:Service Worker 通知(iOS PWA 必要)
+      let notifSent = false;
+      if (Notification.permission === 'granted') {
+        try {
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            const reg = await navigator.serviceWorker.ready;
+            await reg.showNotification(notifTitle, {
+              body: notifBody,
+              tag: 'reminder-' + t.id,
+              requireInteraction: false,
+            });
+            notifSent = true;
+          } else {
+            // Fallback: 直接 Notification
+            const notif = new Notification(notifTitle, {
+              body: notifBody,
+              tag: 'reminder-' + t.id,
+              requireInteraction: false,
+            });
+            notif.onclick = () => { window.focus(); notif.close(); };
+            notifSent = true;
+          }
+        } catch(e) {
+          console.log('notification fail:', e);
+        }
       }
-      // 播放提示音(只在 app 前景才會響)
+
+      // 在 app 前景時:播聲音 + 視覺 fallback
       if (document.visibilityState === 'visible') {
         playReminderSound();
+        // 視覺 fallback,即使系統通知失敗也能看到
+        showVisualAlert(notifTitle, notifBody);
       }
+
       // 標記已通知
       t.notified = true;
       await saveTask(t);
